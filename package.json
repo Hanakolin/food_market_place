@@ -1,0 +1,15 @@
+{
+  "name": "food-marketplace",
+  "version": "1.0.0",
+  "description": "A comprehensive web-based food delivery marketplace connecting customers with restaurants (cooks). Built with React, Node.js, Express, and MySQL.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
