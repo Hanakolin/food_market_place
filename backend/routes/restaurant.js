@@ -24,6 +24,36 @@ router.get('/', optionalAuth, asyncHandler(async (req, res) => {
     });
 }));
 
+// @route   GET /api/restaurants/search
+// @desc    Search restaurants
+// @access  Public
+router.get('/search', optionalAuth, asyncHandler(async (req, res) => {
+    const { q } = req.query;
+    
+    if (!q || q.trim().length === 0) {
+        return res.json({
+            success: true,
+            data: { restaurants: [] }
+        });
+    }
+
+    const searchTerm = `%${q.trim()}%`;
+    const [restaurants] = await pool.execute(`
+        SELECT r.*, u.first_name, u.last_name
+        FROM restaurants r
+        JOIN users u ON r.cook_id = u.id
+        WHERE (r.name LIKE ? OR r.description LIKE ? OR r.cuisine_type LIKE ?)
+              AND r.is_active = true
+        ORDER BY r.rating DESC
+        LIMIT 20
+    `, [searchTerm, searchTerm, searchTerm]);
+
+    res.json({
+        success: true,
+        data: { restaurants }
+    });
+}));
+
 // @route   GET /api/restaurants/:id
 // @desc    Get restaurant details
 // @access  Public
@@ -54,7 +84,7 @@ router.post('/',
     [
         body('name').isLength({ min: 2 }).trim().withMessage('Restaurant name is required'),
         body('cuisine_type').notEmpty().withMessage('Cuisine type is required'),
-        body('phone').isMobilePhone().withMessage('Valid phone number is required')
+        body('phone').isLength({ min: 10 }).withMessage('Valid phone number is required')
     ],
     asyncHandler(async (req, res) => {
         const errors = validationResult(req);

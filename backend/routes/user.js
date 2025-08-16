@@ -57,6 +57,37 @@ router.post('/cart', authenticateToken, requireCustomer, asyncHandler(async (req
     });
 }));
 
+// @route   PUT /api/users/cart/:id
+// @desc    Update cart item quantity
+// @access  Private (Customer only)
+router.put('/cart/:id', authenticateToken, requireCustomer, asyncHandler(async (req, res) => {
+    const { quantity } = req.body;
+    
+    if (!quantity || quantity < 1) {
+        return res.status(400).json({
+            success: false,
+            message: 'Valid quantity is required'
+        });
+    }
+
+    const [result] = await pool.execute(
+        'UPDATE cart_items SET quantity = ? WHERE id = ? AND customer_id = ?',
+        [quantity, req.params.id, req.user.id]
+    );
+
+    if (result.affectedRows === 0) {
+        return res.status(404).json({
+            success: false,
+            message: 'Cart item not found'
+        });
+    }
+
+    res.json({
+        success: true,
+        message: 'Cart item quantity updated'
+    });
+}));
+
 // @route   DELETE /api/users/cart/:id
 // @desc    Remove item from cart
 // @access  Private (Customer only)
